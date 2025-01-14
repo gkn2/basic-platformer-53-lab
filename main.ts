@@ -5,7 +5,9 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile0`, function (sprite, l
     game.gameOver(true)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (duck.vy == 0) {
+    if (duck.vy == 0 || number_of_jumps == 1) {
+        number_of_jumps += 1
+        number_of_jumps = 1
         duck.vy = jump_speed
     }
 })
@@ -74,7 +76,8 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.hazardLava1, function (sp
     game.gameOver(false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.coin, function (sprite, otherSprite) {
-    sprites.destroy(otherSprite, effects.spray, 200)
+    coin.vy = -5
+    sprites.destroy(otherSprite, effects.spray, 350)
     info.changeScoreBy(coin_value)
 })
 function coin_replacement () {
@@ -102,11 +105,17 @@ function coin_replacement () {
     }
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    game.gameOver(false)
+    if (duck.y < ghost.y) {
+        info.changeScoreBy(1)
+        sprites.destroy(ghost, effects.fire, 500)
+    } else {
+        game.gameOver(false)
+    }
 })
 let coin: Sprite = null
 let ghost: Sprite = null
 let duck: Sprite = null
+let number_of_jumps = 0
 let coin_value = 0
 let enemy_speed = 0
 let player_speed = 0
@@ -117,8 +126,14 @@ jump_speed = -250
 player_speed = 100
 enemy_speed = 30
 coin_value = 1
+number_of_jumps = 0
 info.setScore(0)
 tiles.setCurrentTilemap(tilemap`level2`)
 placeplayer()
 coin_replacement()
 enemy_replacement()
+game.onUpdate(function () {
+    if (duck.vy == 0) {
+        number_of_jumps = 0
+    }
+})
