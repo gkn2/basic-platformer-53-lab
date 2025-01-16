@@ -5,7 +5,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile0`, function (sprite, l
     game.gameOver(true)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (duck.vy == 0 || number_of_jumps == 1) {
+    if (duck.vy >= 0 && duck.vy > 50 || number_of_jumps == 1) {
         number_of_jumps += 1
         number_of_jumps = 1
         duck.vy = jump_speed
@@ -38,6 +38,15 @@ function placeplayer () {
         duck.ay = gravity
     }
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
+    if (sprite.x < otherSprite.x) {
+        otherSprite.vx = 100
+    } else {
+        otherSprite.vx = -5
+    }
+    changeProjectile = false
+    sprites.destroy(sprite)
+})
 function enemy_replacement () {
     for (let value of tiles.getTilesByType(assets.tile`myTile2`)) {
         ghost = sprites.create(img`
@@ -76,7 +85,7 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.hazardLava1, function (sp
     game.gameOver(false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.coin, function (sprite, otherSprite) {
-    coin.vy = -5
+    otherSprite.vy = -5
     sprites.destroy(otherSprite, effects.spray, 350)
     info.changeScoreBy(coin_value)
 })
@@ -105,16 +114,40 @@ function coin_replacement () {
     }
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    if (duck.y < ghost.y) {
+    if (sprite.y < otherSprite.y) {
         info.changeScoreBy(1)
-        sprites.destroy(ghost, effects.fire, 500)
+        sprites.destroy(otherSprite, effects.fire, 500)
+        mushroom = sprites.create(img`
+            ..........bbbbbbbbbbbb..........
+            .......bbb331111333333bbb.......
+            .....cbb3331111113333333bbb.....
+            ....cb33333311113333333111db....
+            ...cb3111133333333333311111db...
+            .ccbb1111113333333333311111ddcc.
+            ccbbd1111113333333333331111ddbcc
+            cbbbdd11111333333111333311ddbbbc
+            cbbbdddd1133333311111333bbbbbbbc
+            .cbbbddddbbb33331111dbbbbbbbbbc.
+            .ccbbbbbbbbbbbbbbdddbbbbbbbbbcc.
+            ...cccbbbbbbbbbbbbbbbbbbbbccc...
+            ......cccccccccccccccccccc......
+            ............bbbd11bb............
+            ...........bbbdd111bb...........
+            ..........bbbdddd11dbb..........
+            `, SpriteKind.Projectile)
+        mushroom.setScale(0.75, ScaleAnchor.Middle)
+        mushroom.setPosition(otherSprite.x, otherSprite.y)
+        mushroom.setBounceOnWall(true)
+        sprites.destroy(otherSprite)
     } else {
         game.gameOver(false)
     }
 })
+let mushroom: Sprite = null
 let coin: Sprite = null
 let ghost: Sprite = null
 let duck: Sprite = null
+let changeProjectile = false
 let number_of_jumps = 0
 let coin_value = 0
 let enemy_speed = 0
@@ -127,13 +160,19 @@ player_speed = 100
 enemy_speed = 30
 coin_value = 1
 number_of_jumps = 0
+changeProjectile = false
 info.setScore(0)
 tiles.setCurrentTilemap(tilemap`level2`)
 placeplayer()
 coin_replacement()
 enemy_replacement()
 game.onUpdate(function () {
-    if (duck.vy == 0) {
+    if (duck.vy < 0) {
         number_of_jumps = 0
+    }
+    if (changeProjectile) {
+        if (!(duck.overlapsWith(mushroom))) {
+            mushroom.setKind(SpriteKind.Enemy)
+        }
     }
 })
