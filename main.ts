@@ -5,7 +5,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile0`, function (sprite, l
     game.gameOver(true)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (duck.vy >= 0 && duck.vy > 50 || number_of_jumps == 1) {
+    if (duck.vy >= 0 && duck.vy < coyotejump || number_of_jumps == 1) {
         number_of_jumps += 1
         number_of_jumps = 1
         duck.vy = jump_speed
@@ -147,6 +147,7 @@ let mushroom: Sprite = null
 let coin: Sprite = null
 let ghost: Sprite = null
 let duck: Sprite = null
+let coyotejump = 0
 let changeProjectile = false
 let number_of_jumps = 0
 let coin_value = 0
@@ -161,6 +162,7 @@ enemy_speed = 30
 coin_value = 1
 number_of_jumps = 0
 changeProjectile = false
+coyotejump = 200
 info.setScore(0)
 tiles.setCurrentTilemap(tilemap`level2`)
 placeplayer()
